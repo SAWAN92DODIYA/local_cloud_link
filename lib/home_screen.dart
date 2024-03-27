@@ -38,13 +38,26 @@ class _HomeScreenState extends State<HomeScreen> {
                         children: [
                           Text(data[index].title.toString()),
                           Spacer(),
-                          Icon(Icons.edit),
-                          Icon(Icons.delete, color: Colors.red)
+
+                          InkWell(
+                              onTap: (){
+                                delete(data[index]);
+                              },
+                              child: Icon(Icons.delete, color: Colors.red)),
+                          SizedBox(width: 15,),
+                          InkWell(
+                            onTap: (){
+                              _editMyDilog(data[index], data[index].title.toString(),data[index].description.toString());
+                            },
+                              child: Icon(Icons.edit)),
+
+
 
                         ],
                       ),
 
-                      Text(data[index].description.toString())
+
+                      Text(data[index].description.toString(),style: TextStyle(fontSize: 10,fontWeight:FontWeight.w300),)
                     ],
                   ),
                 ),
@@ -83,6 +96,65 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
 
 
+    );
+  }
+
+  void delete(NoteModel noteModel) async{
+    await noteModel.delete();
+
+
+  }
+  Future<void> _editMyDilog(NoteModel noteModel,String title,String description) async
+  {
+    titleController.text = title;
+    descriptionController.text = description;
+
+    return showDialog(
+        context:context,
+        builder:(context)
+        {
+          return AlertDialog(
+            title: Text('Edit Notes'),
+            content: SingleChildScrollView(
+              child: Column(
+                children: [
+                  TextFormField(
+                    controller: titleController,
+                    decoration: InputDecoration(
+                      hintText: 'Enter title',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  SizedBox(height: 20,),
+                  TextFormField(
+                    controller: descriptionController,
+                    decoration: InputDecoration(
+                      hintText: 'Enter description',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(onPressed: (){
+                Navigator.pop(context);
+              }, child: Text('Cancel')),
+
+              TextButton(onPressed: () async{
+
+                noteModel.title = titleController.text.toString();
+                noteModel.description = descriptionController.text.toString();
+                await noteModel.save();
+                descriptionController.clear();
+                titleController.clear();
+
+
+                Navigator.pop(context);
+              }, child: Text('Edit'))
+            ],
+          );
+        }
     );
   }
   Future<void> _showMyDilog() async
